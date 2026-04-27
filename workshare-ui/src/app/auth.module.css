@@ -1,0 +1,367 @@
+.authPage {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px 16px;
+  background:
+    radial-gradient(circle at top left, rgba(42, 157, 143, 0.2), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(244, 162, 97, 0.16), transparent 24%),
+    linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+}
+
+.authWrap {
+  width: min(100%, 1080px);
+  display: grid;
+  grid-template-columns: minmax(320px, 460px) minmax(320px, 520px);
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+}
+
+.authIntro {
+  display: grid;
+  gap: 24px;
+  padding: 20px 8px;
+  animation: slideUp 500ms ease;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  width: fit-content;
+  color: #12345d;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.brandMark {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #1976d2, #2a9d8f);
+  color: #fff;
+  box-shadow: 0 18px 32px rgba(25, 118, 210, 0.22);
+}
+
+.eyebrow {
+  display: inline-flex;
+  width: fit-content;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(25, 118, 210, 0.1);
+  color: #1976d2;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.introTitle,
+.cardTitle {
+  margin: 0;
+  letter-spacing: -0.05em;
+  color: #13233c;
+}
+
+.introTitle {
+  font-size: clamp(2.5rem, 5vw, 4.25rem);
+  line-height: 0.95;
+}
+
+.introText,
+.featureCard p,
+.switchText {
+  margin: 0;
+  color: #5b6e8b;
+  line-height: 1.7;
+}
+
+.featureGrid {
+  display: grid;
+  gap: 14px;
+}
+
+.featureCard {
+  display: grid;
+  gap: 10px;
+  padding: 18px 20px;
+  border: 1px solid rgba(25, 118, 210, 0.1);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 28px rgba(18, 39, 71, 0.08);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.featureCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 36px rgba(18, 39, 71, 0.12);
+}
+
+.featureIcon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(25, 118, 210, 0.14), rgba(42, 157, 143, 0.18));
+  color: #1976d2;
+}
+
+.authCard {
+  padding: 32px;
+  border: 1px solid rgba(205, 219, 239, 0.9);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 24px 52px rgba(17, 40, 72, 0.12);
+  animation: cardFloat 520ms ease;
+}
+
+.cardHeader {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.cardTitle {
+  font-size: clamp(1.85rem, 3vw, 2.35rem);
+}
+
+.cardText {
+  margin: 0;
+  color: #62738e;
+  line-height: 1.65;
+}
+
+.form {
+  display: grid;
+  gap: 18px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.label {
+  color: #1f3355;
+  font-size: 0.94rem;
+  font-weight: 600;
+}
+
+.input,
+.select {
+  width: 100%;
+  min-height: 54px;
+  border: 1px solid #d7e3f3;
+  border-radius: 16px;
+  padding: 14px 16px;
+  background: #fbfdff;
+  color: #13233c;
+  outline: none;
+  font: inherit;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.input:focus,
+.select:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.12);
+  transform: translateY(-1px);
+}
+
+.passwordWrap {
+  position: relative;
+}
+
+.passwordWrap .input {
+  padding-right: 48px;
+}
+
+.passwordToggle {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #7b8ea8;
+  transition: color 180ms ease;
+}
+
+.passwordToggle:hover {
+  color: #1976d2;
+}
+
+.roleGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.roleOption {
+  position: relative;
+  cursor: pointer;
+}
+
+.roleInput {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.roleCard {
+  display: grid;
+  gap: 10px;
+  min-height: 132px;
+  padding: 18px 16px;
+  border: 1px solid #d7e3f3;
+  border-radius: 20px;
+  background: #f9fbff;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.roleOption:hover .roleCard {
+  transform: translateY(-2px);
+  border-color: #90bee8;
+}
+
+.roleInput:checked + .roleCard {
+  border-color: #1976d2;
+  background: linear-gradient(180deg, #f4f9ff 0%, #eef7f7 100%);
+  box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.12);
+}
+
+.roleCard strong {
+  color: #12345d;
+}
+
+.roleCard span {
+  color: #60728d;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 56px;
+  border: 0;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #1976d2, #2a9d8f);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 18px 32px rgba(25, 118, 210, 0.22);
+  transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+}
+
+.submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 24px 40px rgba(25, 118, 210, 0.26);
+}
+
+.submit:disabled {
+  opacity: 0.75;
+}
+
+.switchText {
+  margin-top: 22px;
+  text-align: center;
+}
+
+.link {
+  color: #1976d2;
+  font-weight: 700;
+}
+
+.errorBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid #f3c3c7;
+  border-radius: 16px;
+  background: #fff3f4;
+  color: #b83a45;
+  font-size: 0.92rem;
+  font-weight: 600;
+  animation: slideDown 220ms ease;
+}
+
+.spinner {
+  animation: spin 800ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cardFloat {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 980px) {
+  .authWrap {
+    grid-template-columns: 1fr;
+    max-width: 560px;
+  }
+
+  .authIntro {
+    padding: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .authPage {
+    padding: 20px 14px;
+  }
+
+  .authCard {
+    padding: 24px;
+    border-radius: 24px;
+  }
+
+  .roleGrid {
+    grid-template-columns: 1fr;
+  }
+}
