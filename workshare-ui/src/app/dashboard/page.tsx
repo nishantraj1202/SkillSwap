@@ -75,7 +75,7 @@ export default function DashboardPage() {
           Track your progress, manage applications, and connect with mentors to accelerate your career journey.
         </p>
         <div className="flex gap-4">
-          <Link href="/dashboard/resume" className="bg-white text-black px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:opacity-90 transition-all">
+          <Link href="/dashboard/resume" className="bg-[#6C63FF] text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 shadow-lg shadow-[#6C63FF]/20 hover:bg-[#5B54E8] transition-all">
             <Upload size={16} strokeWidth={2.5} />
             Upload Resume
           </Link>
