@@ -23,6 +23,7 @@ const path = require("path");
 const multer = require("multer");
 const connectDB = require("./config/db");
 const resumeRoutes = require("./routes/resumeRoutes");
+const aiRoutes = require("./routes/aiRoutes");
 
 // ── Create Express app ──
 const app = express();
@@ -50,6 +51,7 @@ app.get("/", (_req, res) => {
 
 // ── API Routes ──
 app.use("/api/resume", resumeRoutes);
+app.use("/api/ai", aiRoutes);
 
 // ── Global Error Handler ──
 // Catches Multer-specific errors (file too large, wrong type, etc.)

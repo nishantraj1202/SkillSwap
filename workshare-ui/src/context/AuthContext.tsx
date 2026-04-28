@@ -2,15 +2,12 @@
 
 import {
   createContext,
-  useContext,
-  useState,
-  useEffect,
   useCallback,
+  useContext,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-
-/* ─────────────────────────── Types ─────────────────────────── */
 
 export interface UserProfile {
   fullName: string;
@@ -41,8 +38,6 @@ interface AuthContextValue {
   logout: () => void;
 }
 
-/* ─────────────────────── Demo accounts ─────────────────────── */
-
 const DEMO_ACCOUNTS: Record<string, { password: string; name: string; role: string }> = {
   "student@workshare.com": { password: "student123", name: "Demo Student", role: "Student" },
   "mentor@workshare.com": { password: "mentor123", name: "Demo Mentor", role: "Mentor" },
@@ -50,14 +45,18 @@ const DEMO_ACCOUNTS: Record<string, { password: string; name: string; role: stri
   "admin@workshare.com": { password: "admin123", name: "Demo Admin", role: "Admin" },
 };
 
-/* ──────────────────────── Storage keys ─────────────────────── */
-
 const USER_KEY = "workshare_user";
 const ACCOUNTS_KEY = "workshare_accounts";
+const AUTH_EVENT = "workshare_auth_change";
 
-/* helper: get registered accounts from localStorage */
+let cachedUserJson: string | null | undefined;
+let cachedUserSnapshot: AuthUser | null = null;
+
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
 function getAccounts(): Record<string, { password: string; name: string; role: string; profile?: UserProfile }> {
   if (typeof window === "undefined") return {};
+
   try {
     return JSON.parse(localStorage.getItem(ACCOUNTS_KEY) || "{}");
   } catch {
@@ -69,99 +68,108 @@ function saveAccounts(accounts: Record<string, { password: string; name: string;
   localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
 }
 
-/* ──────────────────────── Context ──────────────────────────── */
+function readStoredUser(): AuthUser | null {
+  if (typeof window === "undefined") return null;
 
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+  const stored = localStorage.getItem(USER_KEY);
+  if (stored === cachedUserJson) return cachedUserSnapshot;
+
+  cachedUserJson = stored;
+  try {
+    cachedUserSnapshot = stored ? JSON.parse(stored) : null;
+  } catch {
+    cachedUserSnapshot = null;
+  }
+
+  return cachedUserSnapshot;
+}
+
+function writeStoredUser(user: AuthUser | null) {
+  if (user) {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  } else {
+    localStorage.removeItem(USER_KEY);
+  }
+
+  window.dispatchEvent(new Event(AUTH_EVENT));
+}
+
+function subscribeToAuthStorage(callback: () => void) {
+  window.addEventListener("storage", callback);
+  window.addEventListener(AUTH_EVENT, callback);
+
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener(AUTH_EVENT, callback);
+  };
+}
+
+function subscribeToHydration() {
+  return () => {};
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(() => {
-    if (typeof window === "undefined") return null;
-    try {
-      const stored = localStorage.getItem(USER_KEY);
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
-  });
-  const loading = false;
+  const user = useSyncExternalStore(subscribeToAuthStorage, readStoredUser, () => null);
+  const hasHydrated = useSyncExternalStore(subscribeToHydration, () => true, () => false);
+  const loading = !hasHydrated;
   const router = useRouter();
 
-  /* persist whenever user changes */
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem(USER_KEY, JSON.stringify(user));
-    } else {
-      localStorage.removeItem(USER_KEY);
+  const login = useCallback((email: string, password: string): { ok: boolean; error?: string } => {
+    const lowerEmail = email.trim().toLowerCase();
+    const demo = DEMO_ACCOUNTS[lowerEmail];
+
+    if (demo && demo.password === password) {
+      writeStoredUser({ email: lowerEmail, name: demo.name, role: demo.role });
+      return { ok: true };
     }
-  }, [user]);
 
-  /* ── Login ───────────────────────────────────────────────── */
-  const login = useCallback(
-    (email: string, password: string): { ok: boolean; error?: string } => {
-      const lowerEmail = email.trim().toLowerCase();
-
-      /* check demo accounts first */
-      const demo = DEMO_ACCOUNTS[lowerEmail];
-      if (demo && demo.password === password) {
-        setUser({ email: lowerEmail, name: demo.name, role: demo.role });
-        return { ok: true };
-      }
-
-      /* then registered accounts */
-      const accounts = getAccounts();
-      const acct = accounts[lowerEmail];
-      if (acct && acct.password === password) {
-        setUser({
-          email: lowerEmail,
-          name: acct.name,
-          role: acct.role,
-          profile: acct.profile,
-        });
-        return { ok: true };
-      }
-
-      if (demo || acct) return { ok: false, error: "Incorrect password. Please try again." };
-      return { ok: false, error: "No account found with this email. Please sign up first." };
-    },
-    [],
-  );
-
-  /* ── Signup ──────────────────────────────────────────────── */
-  const signup = useCallback(
-    (profile: UserProfile, password: string): { ok: boolean; error?: string } => {
-      const lowerEmail = profile.email.trim().toLowerCase();
-
-      if (DEMO_ACCOUNTS[lowerEmail]) {
-        return { ok: false, error: "This email is reserved for a demo account. Use a different email." };
-      }
-
-      const accounts = getAccounts();
-      if (accounts[lowerEmail]) {
-        return { ok: false, error: "An account with this email already exists. Please login instead." };
-      }
-
-      accounts[lowerEmail] = {
-        password,
-        name: profile.fullName,
-        role: profile.role,
-        profile,
-      };
-      saveAccounts(accounts);
-
-      setUser({
+    const accounts = getAccounts();
+    const acct = accounts[lowerEmail];
+    if (acct && acct.password === password) {
+      writeStoredUser({
         email: lowerEmail,
-        name: profile.fullName,
-        role: profile.role,
-        profile,
+        name: acct.name,
+        role: acct.role,
+        profile: acct.profile,
       });
       return { ok: true };
-    },
-    [],
-  );
+    }
 
-  /* ── Logout ─────────────────────────────────────────────── */
+    if (demo || acct) return { ok: false, error: "Incorrect password. Please try again." };
+    return { ok: false, error: "No account found with this email. Please sign up first." };
+  }, []);
+
+  const signup = useCallback((profile: UserProfile, password: string): { ok: boolean; error?: string } => {
+    const lowerEmail = profile.email.trim().toLowerCase();
+
+    if (DEMO_ACCOUNTS[lowerEmail]) {
+      return { ok: false, error: "This email is reserved for a demo account. Use a different email." };
+    }
+
+    const accounts = getAccounts();
+    if (accounts[lowerEmail]) {
+      return { ok: false, error: "An account with this email already exists. Please login instead." };
+    }
+
+    accounts[lowerEmail] = {
+      password,
+      name: profile.fullName,
+      role: profile.role,
+      profile,
+    };
+    saveAccounts(accounts);
+
+    writeStoredUser({
+      email: lowerEmail,
+      name: profile.fullName,
+      role: profile.role,
+      profile,
+    });
+    return { ok: true };
+  }, []);
+
   const logout = useCallback(() => {
-    setUser(null);
+    writeStoredUser(null);
     router.push("/");
   }, [router]);
 

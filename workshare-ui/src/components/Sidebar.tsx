@@ -7,7 +7,8 @@ import {
   FileText, 
   BriefcaseBusiness, 
   MessageSquareMore, 
-  Settings
+  Settings,
+  Brain
 } from "lucide-react";
 import {
   AlertDialog,
@@ -23,6 +24,7 @@ import {
 const navItems = [
   { label: "Dashboard", icon: LayoutGrid, href: "/dashboard" },
   { label: "Resume", icon: FileText, href: "/dashboard/resume" },
+  { label: "AI Career Coach", icon: Brain, href: "/dashboard/ai-coach" },
   { label: "Projects", icon: BriefcaseBusiness, href: "/dashboard/projects" },
   { label: "Settings", icon: Settings, href: "/dashboard/settings" },
 ];
@@ -38,7 +40,7 @@ export default function Sidebar() {
     }`;
 
   return (
-    <aside className="w-[240px] bg-[#12152B] flex flex-col p-6 z-50 h-screen hidden md:flex">
+    <aside className="fixed left-0 top-0 bottom-0 z-50 hidden h-screen w-[240px] flex-col overflow-y-auto bg-[#12152B] p-6 md:flex">
       <div className="flex items-center gap-3 font-bold text-xl mb-10">
         <div className="bg-[#6C63FF] w-8 h-8 flex items-center justify-center rounded-lg text-white">
           WS

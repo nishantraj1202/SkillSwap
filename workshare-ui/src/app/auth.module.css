@@ -405,7 +405,7 @@
   position: relative;
   z-index: 1;
   width: min(900px, 100%);
-  min-height: 550px;
+  min-height: 650px;
   display: flex;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -413,6 +413,61 @@
   background: rgba(255, 255, 255, 0.05);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(20px);
+}
+
+/* ... existing styles ... */
+
+.switchRoleSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.switchRoleLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.switchRoleGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.switchRoleOption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.switchRoleOption span {
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.switchRoleOption:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.switchRoleActive {
+  background: rgba(139, 92, 246, 0.1) !important;
+  border-color: #8b5cf6 !important;
+  color: #8b5cf6 !important;
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
 }
 
 .switchPanel {

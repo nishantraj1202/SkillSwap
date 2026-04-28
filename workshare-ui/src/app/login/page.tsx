@@ -2,21 +2,44 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { AlertCircle, ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
+import { AlertCircle, ArrowRight, Eye, EyeOff, Loader2, GraduationCap, Users, BriefcaseBusiness } from "lucide-react";
 import { useAuth, type UserProfile } from "@/context/AuthContext";
 import styles from "../auth.module.css";
+
+const roles = [
+  {
+    label: "Student",
+    value: "Student" as const,
+    description: "Build projects & resume.",
+    icon: GraduationCap,
+  },
+  {
+    label: "Mentor",
+    value: "Mentor" as const,
+    description: "Guide learners.",
+    icon: Users,
+  },
+  {
+    label: "Recruiter",
+    value: "Recruiter / HR" as const,
+    description: "Discover talent.",
+    icon: BriefcaseBusiness,
+  },
+];
 
 export default function LoginPage() {
   const { login, signup } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
-  const [isSignup, setIsSignup] = useState(false);
+  const [isSignup, setIsSignup] = useState(pathname === "/signup");
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [signupName, setSignupName] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
+  const [signupRole, setSignupRole] = useState<UserProfile["role"]>("Student");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [error, setError] = useState("");
@@ -78,7 +101,7 @@ export default function LoginPage() {
       const profile: UserProfile = {
         fullName: signupName.trim(),
         email: signupEmail.trim(),
-        role: "Student",
+        role: signupRole,
         phone: "",
         designation: "",
         institution: "",
@@ -224,6 +247,29 @@ export default function LoginPage() {
               >
                 {showSignupPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
+            </div>
+
+            <div className={styles.switchRoleSection}>
+              <span className={styles.switchRoleLabel}>Role</span>
+              <div className={styles.switchRoleGrid}>
+                {roles.map(({ label, value, icon: Icon }) => (
+                  <label 
+                    className={`${styles.switchRoleOption} ${signupRole === value ? styles.switchRoleActive : ""}`} 
+                    key={label}
+                  >
+                    <input
+                      type="radio"
+                      name="role"
+                      value={value}
+                      checked={signupRole === value}
+                      onChange={() => setSignupRole(value)}
+                      className="hidden"
+                    />
+                    <Icon size={16} />
+                    <span>{label}</span>
+                  </label>
+                ))}
+              </div>
             </div>
             <button className={styles.switchSubmit} type="submit" disabled={isSubmitting}>
               {isSubmitting && isSignup ? (
