@@ -1,12 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { Search, Bell, X } from "lucide-react";
+import { Bell, ChevronDown, LogOut, Search, Settings, X } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function Navbar() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [showNotif, setShowNotif] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   /* derive initials from the user's name */
   const initials = user
@@ -17,6 +30,9 @@ export default function Navbar() {
         .toUpperCase()
         .slice(0, 2)
     : "WS";
+  const displayName = user?.name || "Arjun";
+  const firstName = displayName.split(" ")[0];
+  const role = user?.role || "Student";
 
   return (
     <>
@@ -35,16 +51,99 @@ export default function Navbar() {
         <div className="flex items-center gap-5">
           <button 
             className="relative text-[#8B92B8] hover:text-[#F0F2FF] transition-colors"
-            onClick={() => setShowNotif(true)}
+            onClick={() => {
+              setShowUserMenu(false);
+              setShowNotif(true);
+            }}
           >
             <Bell size={20} />
             <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#6C63FF] rounded-full border-2 border-[#0D0F1A]"></span>
           </button>
-          <div className="w-8 h-8 rounded-full bg-[#6C63FF] flex items-center justify-center font-semibold text-[#F0F2FF] text-xs">
-            {initials}
+
+          <div className="relative z-[60]">
+            <button
+              type="button"
+              aria-label="Open user menu"
+              aria-expanded={showUserMenu}
+              className="flex items-center gap-2 rounded-full border border-transparent p-1 pr-2 text-[#F0F2FF] transition-all hover:border-[#6C63FF]/40 hover:bg-[#1A1F35]"
+              onClick={() => setShowUserMenu((current) => !current)}
+            >
+              <span className="w-8 h-8 rounded-full bg-[#6C63FF] flex items-center justify-center font-semibold text-[#F0F2FF] text-xs">
+                {initials}
+              </span>
+              <ChevronDown
+                size={14}
+                className={`text-[#8B92B8] transition-transform ${showUserMenu ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {showUserMenu && (
+              <div className="absolute right-0 mt-3 w-64 overflow-hidden rounded-2xl border border-[#8B92B8]/10 bg-[#12152B] shadow-2xl shadow-black/40">
+                <div className="flex items-center gap-3 border-b border-[#8B92B8]/10 p-4">
+                  <div className="w-11 h-11 rounded-full bg-[#6C63FF] flex items-center justify-center font-semibold text-[#F0F2FF]">
+                    {initials}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="truncate text-sm font-semibold text-[#F0F2FF]">{firstName}</p>
+                      <span className="rounded-md bg-[#FBBF24] px-2 py-0.5 text-[10px] font-bold text-black">
+                        PRO
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#8B92B8]">{role}</p>
+                  </div>
+                </div>
+
+                <div className="p-2">
+                  <Link
+                    href="/dashboard/settings"
+                    onClick={() => setShowUserMenu(false)}
+                    className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[#8B92B8] transition-colors hover:bg-[#6C63FF]/10 hover:text-[#F0F2FF]"
+                  >
+                    <Settings size={16} />
+                    Account settings
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      setShowLogoutDialog(true);
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-[#8B92B8] transition-colors hover:bg-[#F87171]/10 hover:text-[#F87171]"
+                  >
+                    <LogOut size={16} />
+                    Logout
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </header>
+
+      {showUserMenu && (
+        <button
+          type="button"
+          aria-label="Close user menu"
+          className="fixed inset-0 z-30 cursor-default"
+          onClick={() => setShowUserMenu(false)}
+        />
+      )}
+
+      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ready to leave?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You will be signed out of your account. You&apos;ll need to log in again to access your dashboard and projects.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Stay logged in</AlertDialogCancel>
+            <AlertDialogAction onClick={logout}>Sign out</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Notification Drawer Overlay */}
       {showNotif && (
