@@ -22,10 +22,12 @@ export default function DashboardLayout({
 
   if (loading) {
     return (
-      <div className="app-shell" style={{ display: "grid", placeItems: "center", minHeight: "100vh" }}>
-        <div style={{ textAlign: "center", color: "var(--text-muted)" }}>
-          <div className="navbar__brand-mark" style={{ width: 56, height: 56, fontSize: "1.5rem", margin: "0 auto 16px" }}>W</div>
-          <p>Loading WorkShare…</p>
+      <div className="flex items-center justify-center min-h-screen bg-[#0D0F1A]">
+        <div className="text-center text-[#8B92B8]">
+          <div className="bg-[#6C63FF] w-14 h-14 flex items-center justify-center rounded-xl text-white text-2xl font-bold mx-auto mb-4 shadow-lg shadow-[#6C63FF]/20">
+            W
+          </div>
+          <p className="animate-pulse">Loading WorkShare…</p>
         </div>
       </div>
     );
@@ -34,13 +36,13 @@ export default function DashboardLayout({
   if (!user) return null;
 
   return (
-    <div className="app-shell">
-      <div className="shell-frame">
-        <Sidebar />
-        <div className="main-column">
-          <Navbar />
+    <div className="flex min-h-screen bg-[#0D0F1A] text-[#F0F2FF]">
+      <Sidebar />
+      <div className="flex-1 flex flex-col min-w-0">
+        <Navbar />
+        <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {children}
-        </div>
+        </main>
       </div>
     </div>
   );

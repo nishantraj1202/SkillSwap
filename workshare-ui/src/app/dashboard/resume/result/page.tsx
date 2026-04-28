@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Lightbulb, ListChecks, TrendingUp, Loader2, AlertCircle, Cpu, ShieldCheck, XCircle } from "lucide-react";
+import { ListChecks, TrendingUp, Loader2, AlertCircle, Cpu, ShieldCheck, XCircle } from "lucide-react";
 
 interface ResumeData {
   _id: string;
@@ -19,12 +19,11 @@ function ResultContent() {
   const id = searchParams.get("id");
   
   const [data, setData] = useState<ResumeData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(Boolean(id));
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) {
-      setLoading(false);
       return;
     }
 
@@ -55,7 +54,7 @@ function ResultContent() {
         <div style={{ textAlign: "center" }}>
           <Loader2 size={48} className="animate-spin" style={{ color: "var(--primary)", margin: "0 auto 16px" }} />
           <h2 style={{ fontSize: "1.5rem", fontWeight: 700 }}>Fetching Analysis...</h2>
-          <p style={{ color: "var(--text-muted)" }}>We're gathering the insights from your resume.</p>
+          <p style={{ color: "var(--text-muted)" }}>We&apos;re gathering the insights from your resume.</p>
         </div>
       </div>
     );
@@ -101,7 +100,7 @@ function ResultContent() {
           <div className="result-summary">
             <h3>{score >= 80 ? "High potential with a few high-impact fixes." : score >= 60 ? "Solid foundation with room for growth." : "Potential identified, needs structural refinement."}</h3>
             <p>
-              Your resume has been analyzed by our AI career engine. We've detected key skills and identified specific areas where you can improve your impact.
+              Your resume has been analyzed by our AI career engine. We&apos;ve detected key skills and identified specific areas where you can improve your impact.
             </p>
             <div className="score-progress">
               <div className="score-progress__bar">
@@ -211,4 +210,3 @@ export default function ResumeResultPage() {
     </Suspense>
   );
 }
-

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
-import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import { ToastProvider } from "@/context/ToastContext";
+import "./globals.css";
 
 const outfit = Outfit({ 
   subsets: ["latin"],
@@ -22,7 +23,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${outfit.variable}`}>
       <body className="font-sans antialiased">
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <ToastProvider>
+            {children}
+          </ToastProvider>
+        </AuthProvider>
       </body>
     </html>
   );
