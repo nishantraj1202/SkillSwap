@@ -87,7 +87,7 @@ export default function AICareerCoachPage() {
     }, 2000);
 
     try {
-      const response = await fetch("http://localhost:5000/api/ai/generate-project", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/generate-project`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ domain, level, goal, techStack, mentorSupport }),
@@ -121,7 +121,7 @@ export default function AICareerCoachPage() {
     setThinkingMessage("Analyzing codebase architecture...");
 
     try {
-      const response = await fetch("http://localhost:5000/api/ai/review-project", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/review-project`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ githubUrl }),
