@@ -2,47 +2,27 @@
 
 import React from "react";
 import Link from "next/link";
-import { 
-  Upload, 
-  FileText, 
-  BriefcaseBusiness, 
-  UserCheck, 
-  CalendarClock, 
+import {
+  Upload,
+  FileText,
+  BriefcaseBusiness,
+  UserCheck,
+  CalendarClock,
   Lock,
   Phone
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-
-const stats = [
-  {
-    label: "Resume Score",
-    value: "88%",
-    detail: "Stronger than last review",
-    icon: FileText,
-    color: "text-[#4ADE80]"
-  },
-  {
-    label: "Applied Projects",
-    value: "14",
-    detail: "3 awaiting mentor feedback",
-    icon: BriefcaseBusiness,
-    color: "text-[#F0F2FF]"
-  },
-  {
-    label: "Interviews Taken",
-    value: "6",
-    detail: "2 with top-tier recruiters",
-    icon: UserCheck,
-    color: "text-[#F0F2FF]"
-  },
-  {
-    label: "Upcoming Sessions",
-    value: "4",
-    detail: "Next session starts tomorrow",
-    icon: CalendarClock,
-    color: "text-[#FBBF24]"
-  }
-];
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const recentProjects = [
   { title: "Campus Connect Portal", meta: "Full Stack • Applied 2d ago", status: "Open", statusClass: "bg-[#4ADE80]/10 text-[#4ADE80]" },
@@ -62,10 +42,14 @@ const mentorshipSessions = [
   { name: "Anita Desai", topic: "Behavioral Prep", time: "May 3", active: false }
 ];
 
+interface ResumeSummary {
+  _id: string;
+  score: number;
+}
+
 export default function DashboardPage() {
   const { user } = useAuth();
-  const [resumes, setResumes] = React.useState<any[]>([]);
-  const [loadingResumes, setLoadingResumes] = React.useState(true);
+  const [resumes, setResumes] = React.useState<ResumeSummary[]>([]);
   const firstName = user?.name?.split(" ")[0] || "Arjun";
 
   React.useEffect(() => {
@@ -80,8 +64,6 @@ export default function DashboardPage() {
         }
       } catch (error) {
         console.error("Error fetching resumes:", error);
-      } finally {
-        setLoadingResumes(false);
       }
     };
 
@@ -102,33 +84,29 @@ export default function DashboardPage() {
     },
     {
       label: "Applied Projects",
-      value: hasResume ? "14" : "0",
-      detail: hasResume ? "3 awaiting mentor feedback" : "Start applying to projects",
+      value: "14",
+      detail: "3 awaiting mentor feedback",
       icon: BriefcaseBusiness,
       color: "text-[#F0F2FF]",
       hidden: false
     },
     {
       label: "Interviews Taken",
-      value: hasResume ? "6" : "0",
-      detail: hasResume ? "2 with top-tier recruiters" : "Mock interviews available",
+      value: "6",
+      detail: "2 with top-tier recruiters",
       icon: UserCheck,
       color: "text-[#F0F2FF]",
       hidden: false
     },
     {
       label: "Upcoming Sessions",
-      value: hasResume ? "4" : "0",
-      detail: hasResume ? "Next session starts tomorrow" : "Connect with mentors",
+      value: "4",
+      detail: "Next session starts tomorrow",
       icon: CalendarClock,
       color: "text-[#FBBF24]",
       hidden: false
     }
   ];
-
-  const displayProjects = hasResume ? recentProjects : [];
-  const displayInterviews = hasResume ? interviewResults : [];
-  const displaySessions = hasResume ? mentorshipSessions : [];
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 bg-[#0D0F1A]">
@@ -138,7 +116,7 @@ export default function DashboardPage() {
           Welcome back, {firstName}.
         </h1>
         <p className="text-[#8B92B8] mb-6 max-w-[500px] text-sm md:text-base">
-          {hasResume 
+          {hasResume
             ? "Track your progress, manage applications, and connect with mentors to accelerate your career journey."
             : "Get started by uploading your resume to get an AI-powered analysis and unlock personalized project suggestions."}
         </p>
@@ -174,7 +152,7 @@ export default function DashboardPage() {
             <h2 className="text-lg font-semibold">Recent Projects</h2>
           </div>
           <div className="space-y-4">
-            {displayProjects.length > 0 ? displayProjects.map((project, idx) => (
+            {recentProjects.map((project, idx) => (
               <div key={idx} className="flex justify-between items-center py-3 border-b border-[#8B92B8]/5 last:border-0">
                 <div className="flex flex-col gap-1">
                   <span className="font-medium text-sm">{project.title}</span>
@@ -184,9 +162,7 @@ export default function DashboardPage() {
                   {project.status}
                 </span>
               </div>
-            )) : (
-              <p className="text-sm text-[#8B92B8] py-4">No recent applications.</p>
-            )}
+            ))}
           </div>
         </section>
 
@@ -196,7 +172,7 @@ export default function DashboardPage() {
             <h2 className="text-lg font-semibold">Interview Results</h2>
           </div>
           <div className="space-y-4">
-            {displayInterviews.length > 0 ? displayInterviews.map((result, idx) => (
+            {interviewResults.map((result, idx) => (
               <div key={idx} className="flex justify-between items-center py-3 border-b border-[#8B92B8]/5 last:border-0">
                 <div className="flex flex-col gap-1">
                   <span className="font-medium text-sm">{result.company}</span>
@@ -206,9 +182,7 @@ export default function DashboardPage() {
                   {result.status}
                 </span>
               </div>
-            )) : (
-              <p className="text-sm text-[#8B92B8] py-4">No interviews taken yet.</p>
-            )}
+            ))}
           </div>
         </section>
 
@@ -218,7 +192,7 @@ export default function DashboardPage() {
             <h2 className="text-lg font-semibold">Mentorship Sessions</h2>
           </div>
           <div className="space-y-4">
-            {displaySessions.length > 0 ? displaySessions.map((session, idx) => (
+            {mentorshipSessions.map((session, idx) => (
               <div key={idx} className="flex justify-between items-center py-3 border-b border-[#8B92B8]/5 last:border-0">
                 <div className="flex flex-col gap-1">
                   <span className="font-medium text-sm">{session.name}</span>
@@ -226,9 +200,7 @@ export default function DashboardPage() {
                 </div>
                 <Phone size={16} className={session.active ? "text-[#6C63FF]" : "text-[#8B92B8]"} />
               </div>
-            )) : (
-              <p className="text-sm text-[#8B92B8] py-4">No sessions scheduled.</p>
-            )}
+            ))}
           </div>
         </section>
       </div>
@@ -323,12 +295,27 @@ export default function DashboardPage() {
               Detailed recruiter feedback
             </li>
           </ul>
-          <button className="bg-[#6C63FF] text-white px-6 py-2.5 rounded-lg font-semibold hover:opacity-90 transition-all text-sm">
-            Upgrade to Pro
-          </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button className="bg-[#6C63FF] text-white px-6 py-2.5 rounded-lg font-semibold hover:opacity-90 transition-all text-sm">
+                Upgrade to Pro
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Upgrade to Pro</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Pro subscriptions are not live yet. We&apos;ll unlock premium analytics, recruiter insights, and priority mentorship here as soon as billing is ready.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Maybe later</AlertDialogCancel>
+                <AlertDialogAction>Notify me</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </section>
     </div>
   );
 }
-

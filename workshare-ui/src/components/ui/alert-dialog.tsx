@@ -31,9 +31,11 @@ export function AlertDialog({ children, open: controlledOpen, onOpenChange }: Al
 export function AlertDialogTrigger({
   children,
   render,
+  asChild = false,
 }: {
   children?: React.ReactNode;
   render?: React.ReactElement<React.HTMLAttributes<HTMLElement>>;
+  asChild?: boolean;
 }) {
   const context = React.useContext(AlertDialogContext);
   if (!context) return null;
@@ -42,6 +44,18 @@ export function AlertDialogTrigger({
 
   if (render) {
     return React.cloneElement(render, { onClick: handleClick });
+  }
+
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(
+      children as React.ReactElement<{ onClick?: React.MouseEventHandler<HTMLElement> }>,
+      {
+        onClick: (event: React.MouseEvent<HTMLElement>) => {
+          children.props.onClick?.(event);
+          handleClick();
+        },
+      }
+    );
   }
 
   return <div onClick={handleClick} className="inline-block">{children}</div>;
