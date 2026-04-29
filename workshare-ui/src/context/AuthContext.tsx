@@ -124,7 +124,7 @@ function subscribeToAuthStorage(callback: () => void) {
 }
 
 function subscribeToHydration() {
-  return () => {};
+  return () => { };
 }
 
 async function postJson<TBody extends object>(path: string, body: TBody) {
