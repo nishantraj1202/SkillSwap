@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Navbar from "@/components/Navbar";
@@ -13,6 +13,7 @@ export default function DashboardLayout({
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -37,9 +38,9 @@ export default function DashboardLayout({
 
   return (
     <div className="h-screen overflow-hidden bg-[#0D0F1A] text-[#F0F2FF]">
-      <Sidebar />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex h-full min-w-0 flex-col md:ml-[240px]">
-        <Navbar />
+        <Navbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {children}
         </main>

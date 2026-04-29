@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { Bell, ChevronDown, LogOut, Search, Settings, X } from "lucide-react";
+import { Bell, ChevronDown, LogOut, Search, Settings, X, Menu } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-export default function Navbar() {
+export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { user, logout } = useAuth();
   const [showNotif, setShowNotif] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -37,9 +37,18 @@ export default function Navbar() {
   return (
     <>
       <header className="h-[64px] flex items-center justify-between px-6 bg-[#0D0F1A] border-b border-[#8B92B8]/5 sticky top-0 z-40">
-        <div className="text-[#8B92B8] text-sm hidden sm:block">Pages / Dashboard</div>
+        <div className="flex items-center gap-4">
+          <button 
+            className="md:hidden text-[#8B92B8] hover:text-[#F0F2FF] transition-colors"
+            onClick={onMenuClick}
+            aria-label="Open sidebar"
+          >
+            <Menu size={20} />
+          </button>
+          <div className="text-[#8B92B8] text-sm hidden lg:block">Pages / Dashboard</div>
+        </div>
 
-        <div className="bg-[#1A1F35] rounded-full px-4 py-2 flex items-center gap-3 w-full max-w-[400px] mx-4">
+        <div className="bg-[#1A1F35] rounded-full px-4 py-2 hidden sm:flex items-center gap-3 w-full max-w-[400px] mx-4">
           <Search size={16} className="text-[#8B92B8] shrink-0" />
           <input 
             type="text" 

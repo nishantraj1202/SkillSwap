@@ -782,30 +782,59 @@
   .switchContainerActive {
     min-height: auto;
     flex-direction: column;
+    overflow: visible;
   }
 
   .switchPanel,
   .switchFormBox {
     width: 100%;
+    transform: none !important;
   }
 
-  .switchPanel,
-  .switchContainerActive .switchPanel,
-  .switchContainerActive .switchFormBox {
-    transform: none;
+  .switchPanel p {
+    display: none;
+  }
+
+  .switchBrand {
+    top: 20px;
+    left: 20px;
+    font-size: 0.9rem;
+  }
+
+  .switchBrand span {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+  }
+
+  .switchPanel h1 {
+    font-size: 1.5rem;
+    margin-top: 10px;
   }
 
   .switchPanel {
-    min-height: 260px;
-    padding: 84px 28px 32px;
+    min-height: 160px;
+    padding: 60px 20px 20px;
   }
 
   .switchFormBox {
-    min-height: 380px;
+    min-height: auto;
   }
 
   .switchForm {
-    padding: 32px 24px;
+    position: relative;
+    inset: auto;
+    padding: 24px 20px;
+    transform: none !important;
+    display: none;
+  }
+
+  /* Show the correct form on mobile */
+  .switchContainer:not(.switchContainerActive) .switchLogin,
+  .switchContainer.switchContainerActive .switchSignup,
+  .switchForm.switchOtp {
+    display: flex;
   }
 
   .switchOtpGrid {

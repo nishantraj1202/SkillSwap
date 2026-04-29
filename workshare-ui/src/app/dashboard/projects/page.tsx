@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, Calendar, Filter, Search, User } from "lucide-react";
+import { ArrowUpRight, Calendar, Filter, Search, User, ArrowLeft } from "lucide-react";
 import { projects } from "@/data/workshare-data";
 import { useToast } from "@/context/ToastContext";
 
@@ -13,7 +13,15 @@ export default function ProjectListPage() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#0D0F1A]">
+    <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 bg-[#0D0F1A]">
+      {/* Mobile Back Button */}
+      <Link 
+        href="/dashboard" 
+        className="flex items-center gap-2 text-[#8B92B8] hover:text-[#F0F2FF] md:hidden mb-2 group w-fit transition-colors"
+      >
+        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+        <span className="text-sm font-medium">Back to Dashboard</span>
+      </Link>
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold text-[#F0F2FF]">Available Projects</h2>

@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowUpRight, FileUp, Info, Loader2, Sparkles, UploadCloud, X } from "lucide-react";
+import { ArrowUpRight, FileUp, Info, Loader2, Sparkles, UploadCloud, X, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 
@@ -81,8 +81,17 @@ export default function ResumeUploadPage() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#0D0F1A]">
-      <section className="bg-[#1A1F35] p-8 rounded-[12px] border border-[#6C63FF]/20 relative overflow-hidden">
+    <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 bg-[#0D0F1A]">
+      {/* Mobile Back Button */}
+      <Link 
+        href="/dashboard" 
+        className="flex items-center gap-2 text-[#8B92B8] hover:text-[#F0F2FF] md:hidden mb-2 group w-fit transition-colors"
+      >
+        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+        <span className="text-sm font-medium">Back to Dashboard</span>
+      </Link>
+
+      <section className="bg-[#1A1F35] p-6 md:p-8 rounded-[12px] border border-[#6C63FF]/20 relative overflow-hidden">
         {/* Background glow */}
         <div className="absolute -right-20 -top-20 w-64 h-64 bg-[#6C63FF]/5 blur-3xl rounded-full pointer-events-none" />
         

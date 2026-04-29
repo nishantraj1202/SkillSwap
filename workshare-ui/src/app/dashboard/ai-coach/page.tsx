@@ -16,10 +16,12 @@ import {
   Lightbulb, 
   BarChart3, 
   GraduationCap,
-  Sparkles
+  Sparkles,
+  ArrowLeft
 } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
 import { Button } from "@/components/ui/Button";
+import Link from "next/link";
 
 // --- Types ---
 type Domain = "Web Development" | "Machine Learning" | "App Development" | "Data Science" | "DevOps";
@@ -144,16 +146,25 @@ export default function AICareerCoachPage() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-[#0D0F1A]">
+    <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-8 bg-[#0D0F1A]">
+      {/* Mobile Back Button */}
+      <Link 
+        href="/dashboard" 
+        className="flex items-center gap-2 text-[#8B92B8] hover:text-[#F0F2FF] md:hidden mb-2 group w-fit transition-colors"
+      >
+        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+        <span className="text-sm font-medium">Back to Dashboard</span>
+      </Link>
+
       {/* Header */}
       <header className="flex flex-col gap-2">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-[#6C63FF]/20 rounded-xl flex items-center justify-center text-[#6C63FF]">
+          <div className="w-10 h-10 bg-[#6C63FF]/20 rounded-xl flex items-center justify-center text-[#6C63FF] shrink-0">
             <Brain size={24} />
           </div>
-          <h1 className="text-3xl font-bold text-[#F0F2FF]">AI Career Coach</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-[#F0F2FF]">AI Career Coach</h1>
         </div>
-        <p className="text-[#8B92B8] max-w-2xl">
+        <p className="text-[#8B92B8] text-sm md:text-base max-w-2xl">
           Your personalized architect and career advisor. Generate high-impact projects or get your code reviewed by AI.
         </p>
       </header>

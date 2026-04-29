@@ -67,19 +67,21 @@ export default function DashboardPage() {
   const firstName = user?.name?.split(" ")[0] || "Arjun";
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#0D0F1A]">
+    <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 bg-[#0D0F1A]">
       {/* Hero Banner */}
-      <section className="relative h-[180px] bg-gradient-to-br from-[#1a237e] to-[#0d0f1a] rounded-[12px] p-10 flex flex-col justify-center overflow-hidden">
-        <h1 className="text-[36px] font-bold text-[#F0F2FF] mb-2">Welcome back, {firstName}.</h1>
-        <p className="text-[#8B92B8] mb-6 max-width-[500px]">
+      <section className="relative min-h-[160px] md:h-[180px] bg-gradient-to-br from-[#1a237e] to-[#0d0f1a] rounded-[12px] p-6 md:p-10 flex flex-col justify-center overflow-hidden">
+        <h1 className="text-2xl md:text-[36px] font-bold text-[#F0F2FF] mb-2 leading-tight">
+          Welcome back, {firstName}.
+        </h1>
+        <p className="text-[#8B92B8] mb-6 max-w-[500px] text-sm md:text-base">
           Track your progress, manage applications, and connect with mentors to accelerate your career journey.
         </p>
-        <div className="flex gap-4">
-          <Link href="/dashboard/resume" className="bg-[#6C63FF] text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 shadow-lg shadow-[#6C63FF]/20 hover:bg-[#5B54E8] transition-all">
+        <div className="flex flex-wrap gap-3 md:gap-4">
+          <Link href="/dashboard/resume" className="bg-[#6C63FF] text-white px-4 md:px-5 py-2 md:py-2.5 rounded-lg font-semibold flex items-center gap-2 shadow-lg shadow-[#6C63FF]/20 hover:bg-[#5B54E8] transition-all text-sm">
             <Upload size={16} strokeWidth={2.5} />
             Upload Resume
           </Link>
-          <Link href="/dashboard/projects" className="border border-[#6C63FF] text-[#6C63FF] px-5 py-2.5 rounded-lg font-semibold hover:bg-[#6C63FF]/10 transition-all">
+          <Link href="/dashboard/projects" className="border border-[#6C63FF] text-[#6C63FF] px-4 md:px-5 py-2 md:py-2.5 rounded-lg font-semibold hover:bg-[#6C63FF]/10 transition-all text-sm">
             Apply Project
           </Link>
         </div>
