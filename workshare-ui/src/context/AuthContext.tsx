@@ -127,7 +127,7 @@ function subscribeToHydration() {
   return () => {};
 }
 
-async function postJson(path: string, body: Record<string, unknown>) {
+async function postJson<TBody extends object>(path: string, body: TBody) {
   try {
     const response = await fetch(`${API_BASE_URL}${path}`, {
       method: "POST",
