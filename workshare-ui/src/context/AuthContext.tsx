@@ -9,86 +9,105 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 
-export interface UserProfile {
-  fullName: string;
-  email: string;
-  phone: string;
-  role: "Student" | "Mentor" | "Recruiter / HR";
-  designation: string;
-  institution: string;
-  department: string;
-  experience: string;
-  linkedIn: string;
-  idProof: string;
-  reason: string;
-}
+export type UserRole = "student" | "mentor" | "recruiter";
 
 export interface AuthUser {
+  id: string;
   email: string;
   name: string;
   role: string;
-  profile?: UserProfile;
+  rawRole: UserRole;
+  isVerified: boolean;
+}
+
+interface AuthResult {
+  ok: boolean;
+  error?: string;
+  requiresVerification?: boolean;
+  email?: string;
+  resendAvailableIn?: number;
+}
+
+interface SignupPayload {
+  fullName: string;
+  email: string;
+  password: string;
+  role: UserRole;
+}
+
+interface VerifyOtpPayload {
+  email: string;
+  otp: string;
 }
 
 interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
-  login: (email: string, password: string) => { ok: boolean; error?: string };
-  signup: (profile: UserProfile, password: string) => { ok: boolean; error?: string };
+  login: (email: string, password: string) => Promise<AuthResult>;
+  signup: (payload: SignupPayload) => Promise<AuthResult>;
+  verifyOtp: (payload: VerifyOtpPayload) => Promise<AuthResult>;
+  resendOtp: (email: string) => Promise<AuthResult>;
   logout: () => void;
 }
 
-const DEMO_ACCOUNTS: Record<string, { password: string; name: string; role: string }> = {
-  "student@workshare.com": { password: "student123", name: "Demo Student", role: "Student" },
-  "mentor@workshare.com": { password: "mentor123", name: "Demo Mentor", role: "Mentor" },
-  "recruiter@workshare.com": { password: "recruiter123", name: "Demo Recruiter", role: "Recruiter / HR" },
-  "admin@workshare.com": { password: "admin123", name: "Demo Admin", role: "Admin" },
+type StoredSession = {
+  token: string;
+  user: AuthUser;
 };
 
-const USER_KEY = "workshare_user";
-const ACCOUNTS_KEY = "workshare_accounts";
+const AUTH_STORAGE_KEY = "workshare_auth_session";
 const AUTH_EVENT = "workshare_auth_change";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 
-let cachedUserJson: string | null | undefined;
-let cachedUserSnapshot: AuthUser | null = null;
+let cachedSessionJson: string | null | undefined;
+let cachedSession: StoredSession | null = null;
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-function getAccounts(): Record<string, { password: string; name: string; role: string; profile?: UserProfile }> {
-  if (typeof window === "undefined") return {};
-
-  try {
-    return JSON.parse(localStorage.getItem(ACCOUNTS_KEY) || "{}");
-  } catch {
-    return {};
-  }
+function formatRole(role: string): string {
+  if (role === "recruiter") return "Recruiter";
+  if (role === "mentor") return "Mentor";
+  return "Student";
 }
 
-function saveAccounts(accounts: Record<string, { password: string; name: string; role: string; profile?: UserProfile }>) {
-  localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
+function mapUser(user: {
+  id: string;
+  fullName: string;
+  email: string;
+  role: UserRole;
+  isVerified: boolean;
+}): AuthUser {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.fullName,
+    role: formatRole(user.role),
+    rawRole: user.role,
+    isVerified: user.isVerified,
+  };
 }
 
-function readStoredUser(): AuthUser | null {
+function readStoredSession(): StoredSession | null {
   if (typeof window === "undefined") return null;
 
-  const stored = localStorage.getItem(USER_KEY);
-  if (stored === cachedUserJson) return cachedUserSnapshot;
+  const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+  if (stored === cachedSessionJson) return cachedSession;
 
-  cachedUserJson = stored;
+  cachedSessionJson = stored;
   try {
-    cachedUserSnapshot = stored ? JSON.parse(stored) : null;
+    cachedSession = stored ? (JSON.parse(stored) as StoredSession) : null;
   } catch {
-    cachedUserSnapshot = null;
+    cachedSession = null;
   }
 
-  return cachedUserSnapshot;
+  return cachedSession;
 }
 
-function writeStoredUser(user: AuthUser | null) {
-  if (user) {
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
+function writeStoredSession(session: StoredSession | null) {
+  if (session) {
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
   } else {
-    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(AUTH_STORAGE_KEY);
   }
 
   window.dispatchEvent(new Event(AUTH_EVENT));
@@ -108,80 +127,173 @@ function subscribeToHydration() {
   return () => {};
 }
 
+async function postJson(path: string, body: Record<string, unknown>) {
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    let payload: {
+      success?: boolean;
+      message?: string;
+      data?: Record<string, unknown>;
+    } = {};
+
+    try {
+      payload = await response.json();
+    } catch {
+      payload = {};
+    }
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        error: payload.message || "Something went wrong.",
+        data: payload.data || {},
+      };
+    }
+
+    return {
+      ok: true,
+      data: payload.data || {},
+    };
+  } catch {
+    return {
+      ok: false,
+      error: `Unable to reach the WorkShare API at ${API_BASE_URL}.`,
+      data: {},
+    };
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const user = useSyncExternalStore(subscribeToAuthStorage, readStoredUser, () => null);
+  const session = useSyncExternalStore(subscribeToAuthStorage, readStoredSession, () => null);
   const hasHydrated = useSyncExternalStore(subscribeToHydration, () => true, () => false);
   const loading = !hasHydrated;
   const router = useRouter();
 
-  const login = useCallback((email: string, password: string): { ok: boolean; error?: string } => {
-    const lowerEmail = email.trim().toLowerCase();
-    const demo = DEMO_ACCOUNTS[lowerEmail];
-
-    if (demo && demo.password === password) {
-      writeStoredUser({ email: lowerEmail, name: demo.name, role: demo.role });
-      return { ok: true };
-    }
-
-    const accounts = getAccounts();
-    const acct = accounts[lowerEmail];
-    if (acct && acct.password === password) {
-      writeStoredUser({
-        email: lowerEmail,
-        name: acct.name,
-        role: acct.role,
-        profile: acct.profile,
-      });
-      return { ok: true };
-    }
-
-    if (demo || acct) return { ok: false, error: "Incorrect password. Please try again." };
-    return { ok: false, error: "No account found with this email. Please sign up first." };
-  }, []);
-
-  const signup = useCallback((profile: UserProfile, password: string): { ok: boolean; error?: string } => {
-    const lowerEmail = profile.email.trim().toLowerCase();
-
-    if (DEMO_ACCOUNTS[lowerEmail]) {
-      return { ok: false, error: "This email is reserved for a demo account. Use a different email." };
-    }
-
-    const accounts = getAccounts();
-    if (accounts[lowerEmail]) {
-      return { ok: false, error: "An account with this email already exists. Please login instead." };
-    }
-
-    accounts[lowerEmail] = {
+  const login = useCallback(async (email: string, password: string): Promise<AuthResult> => {
+    const result = await postJson("/api/auth/login", {
+      email: email.trim(),
       password,
-      name: profile.fullName,
-      role: profile.role,
-      profile,
-    };
-    saveAccounts(accounts);
-
-    writeStoredUser({
-      email: lowerEmail,
-      name: profile.fullName,
-      role: profile.role,
-      profile,
     });
+
+    if (!result.ok) {
+      const resendAvailableIn = Number(result.data.resendAvailableIn || 0);
+      return {
+        ok: false,
+        error: result.error,
+        requiresVerification: Boolean(result.data.requiresVerification),
+        email: typeof result.data.email === "string" ? result.data.email : email.trim().toLowerCase(),
+        resendAvailableIn,
+      };
+    }
+
+    const token = typeof result.data.token === "string" ? result.data.token : "";
+    const user = result.data.user as {
+      id: string;
+      fullName: string;
+      email: string;
+      role: UserRole;
+      isVerified: boolean;
+    };
+
+    writeStoredSession({
+      token,
+      user: mapUser(user),
+    });
+
     return { ok: true };
   }, []);
 
+  const signup = useCallback(async (payload: SignupPayload): Promise<AuthResult> => {
+    const result = await postJson("/api/auth/register", payload);
+
+    if (!result.ok) {
+      return { ok: false, error: result.error };
+    }
+
+    return {
+      ok: true,
+      email: typeof result.data.email === "string" ? result.data.email : payload.email,
+      resendAvailableIn: Number(result.data.resendAvailableIn || 30),
+    };
+  }, []);
+
+  const verifyOtp = useCallback(async ({ email, otp }: VerifyOtpPayload): Promise<AuthResult> => {
+    const result = await postJson("/api/auth/verify-otp", {
+      email: email.trim(),
+      otp: otp.trim(),
+    });
+
+    if (!result.ok) {
+      return { ok: false, error: result.error };
+    }
+
+    const token = typeof result.data.token === "string" ? result.data.token : "";
+    const user = result.data.user as {
+      id: string;
+      fullName: string;
+      email: string;
+      role: UserRole;
+      isVerified: boolean;
+    };
+
+    writeStoredSession({
+      token,
+      user: mapUser(user),
+    });
+
+    return { ok: true };
+  }, []);
+
+  const resendOtp = useCallback(async (email: string): Promise<AuthResult> => {
+    const result = await postJson("/api/auth/resend-otp", {
+      email: email.trim(),
+    });
+
+    if (!result.ok) {
+      return {
+        ok: false,
+        error: result.error,
+        resendAvailableIn: Number(result.data.resendAvailableIn || 0),
+      };
+    }
+
+    return {
+      ok: true,
+      resendAvailableIn: Number(result.data.resendAvailableIn || 30),
+    };
+  }, []);
+
   const logout = useCallback(() => {
-    writeStoredUser(null);
+    writeStoredSession(null);
     router.push("/");
   }, [router]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout }}>
+    <AuthContext.Provider
+      value={{
+        user: session?.user || null,
+        loading,
+        login,
+        signup,
+        verifyOtp,
+        resendOtp,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within an AuthProvider");
-  return ctx;
+  const context = useContext(AuthContext);
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
+  return context;
 }

@@ -558,6 +558,10 @@
   transition: transform 0.5s ease;
 }
 
+.switchOtp {
+  position: relative;
+}
+
 .switchSignup {
   transform: translateX(-100%);
 }
@@ -658,6 +662,95 @@
   font-weight: 700;
 }
 
+.switchOtpMeta {
+  display: grid;
+  gap: 12px;
+  margin-top: -6px;
+}
+
+.switchOtpMeta p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.6;
+}
+
+.switchOtpBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #f8fafc;
+  font-size: 0.82rem;
+}
+
+.switchOtpBadge span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.switchOtpGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.switchOtpInput {
+  min-height: 58px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 800;
+  outline: none;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.switchOtpInput:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.22);
+  transform: translateY(-1px);
+}
+
+.switchOtpActions {
+  display: grid;
+  gap: 12px;
+}
+
+.switchGhostButton {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #dbe4ff;
+  font-weight: 700;
+  transition: border-color 180ms ease, background-color 180ms ease, opacity 180ms ease;
+}
+
+.switchGhostButton:hover:not(:disabled) {
+  border-color: rgba(139, 92, 246, 0.5);
+  background: rgba(139, 92, 246, 0.08);
+}
+
+.switchGhostButton:disabled {
+  opacity: 0.6;
+}
+
+.spinner {
+  animation: spin 0.9s linear infinite;
+}
+
 @keyframes authFloat {
   0%,
   100% {
@@ -666,6 +759,16 @@
 
   50% {
     transform: translateY(-40px);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
   }
 }
 
@@ -703,5 +806,14 @@
 
   .switchForm {
     padding: 32px 24px;
+  }
+
+  .switchOtpGrid {
+    gap: 8px;
+  }
+
+  .switchOtpInput {
+    min-height: 52px;
+    font-size: 1.1rem;
   }
 }
