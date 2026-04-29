@@ -64,7 +64,71 @@ const mentorshipSessions = [
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const [resumes, setResumes] = React.useState<any[]>([]);
+  const [loadingResumes, setLoadingResumes] = React.useState(true);
   const firstName = user?.name?.split(" ")[0] || "Arjun";
+
+  React.useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchResumes = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000"}/api/resume/${user.id}`);
+        const data = await response.json();
+        if (data.success) {
+          setResumes(data.data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching resumes:", error);
+      } finally {
+        setLoadingResumes(false);
+      }
+    };
+
+    fetchResumes();
+  }, [user?.id]);
+
+  const latestResume = resumes.length > 0 ? resumes[0] : null;
+  const hasResume = !!latestResume;
+
+  const dashboardStats = [
+    {
+      label: "Resume Score",
+      value: hasResume ? `${latestResume.score}%` : "—",
+      detail: hasResume ? "Stronger than last review" : "Upload resume to see score",
+      icon: FileText,
+      color: hasResume ? "text-[#4ADE80]" : "text-[#8B92B8]",
+      hidden: false
+    },
+    {
+      label: "Applied Projects",
+      value: hasResume ? "14" : "0",
+      detail: hasResume ? "3 awaiting mentor feedback" : "Start applying to projects",
+      icon: BriefcaseBusiness,
+      color: "text-[#F0F2FF]",
+      hidden: false
+    },
+    {
+      label: "Interviews Taken",
+      value: hasResume ? "6" : "0",
+      detail: hasResume ? "2 with top-tier recruiters" : "Mock interviews available",
+      icon: UserCheck,
+      color: "text-[#F0F2FF]",
+      hidden: false
+    },
+    {
+      label: "Upcoming Sessions",
+      value: hasResume ? "4" : "0",
+      detail: hasResume ? "Next session starts tomorrow" : "Connect with mentors",
+      icon: CalendarClock,
+      color: "text-[#FBBF24]",
+      hidden: false
+    }
+  ];
+
+  const displayProjects = hasResume ? recentProjects : [];
+  const displayInterviews = hasResume ? interviewResults : [];
+  const displaySessions = hasResume ? mentorshipSessions : [];
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 bg-[#0D0F1A]">
@@ -74,12 +138,14 @@ export default function DashboardPage() {
           Welcome back, {firstName}.
         </h1>
         <p className="text-[#8B92B8] mb-6 max-w-[500px] text-sm md:text-base">
-          Track your progress, manage applications, and connect with mentors to accelerate your career journey.
+          {hasResume 
+            ? "Track your progress, manage applications, and connect with mentors to accelerate your career journey."
+            : "Get started by uploading your resume to get an AI-powered analysis and unlock personalized project suggestions."}
         </p>
         <div className="flex flex-wrap gap-3 md:gap-4">
           <Link href="/dashboard/resume" className="bg-[#6C63FF] text-white px-4 md:px-5 py-2 md:py-2.5 rounded-lg font-semibold flex items-center gap-2 shadow-lg shadow-[#6C63FF]/20 hover:bg-[#5B54E8] transition-all text-sm">
             <Upload size={16} strokeWidth={2.5} />
-            Upload Resume
+            {hasResume ? "Update Resume" : "Upload Resume"}
           </Link>
           <Link href="/dashboard/projects" className="border border-[#6C63FF] text-[#6C63FF] px-4 md:px-5 py-2 md:py-2.5 rounded-lg font-semibold hover:bg-[#6C63FF]/10 transition-all text-sm">
             Apply Project
@@ -91,7 +157,7 @@ export default function DashboardPage() {
 
       {/* Stat Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, idx) => (
+        {dashboardStats.map((stat, idx) => (
           <article key={idx} className="bg-[#1A1F35] p-5 rounded-[12px] border border-transparent hover:border-[#6C63FF]/30 transition-all">
             <span className="text-[#8B92B8] text-sm mb-2 block">{stat.label}</span>
             <span className={`text-[28px] font-bold mb-1 block ${stat.color}`}>{stat.value}</span>
@@ -108,7 +174,7 @@ export default function DashboardPage() {
             <h2 className="text-lg font-semibold">Recent Projects</h2>
           </div>
           <div className="space-y-4">
-            {recentProjects.map((project, idx) => (
+            {displayProjects.length > 0 ? displayProjects.map((project, idx) => (
               <div key={idx} className="flex justify-between items-center py-3 border-b border-[#8B92B8]/5 last:border-0">
                 <div className="flex flex-col gap-1">
                   <span className="font-medium text-sm">{project.title}</span>
@@ -118,7 +184,9 @@ export default function DashboardPage() {
                   {project.status}
                 </span>
               </div>
-            ))}
+            )) : (
+              <p className="text-sm text-[#8B92B8] py-4">No recent applications.</p>
+            )}
           </div>
         </section>
 
@@ -128,7 +196,7 @@ export default function DashboardPage() {
             <h2 className="text-lg font-semibold">Interview Results</h2>
           </div>
           <div className="space-y-4">
-            {interviewResults.map((result, idx) => (
+            {displayInterviews.length > 0 ? displayInterviews.map((result, idx) => (
               <div key={idx} className="flex justify-between items-center py-3 border-b border-[#8B92B8]/5 last:border-0">
                 <div className="flex flex-col gap-1">
                   <span className="font-medium text-sm">{result.company}</span>
@@ -138,7 +206,9 @@ export default function DashboardPage() {
                   {result.status}
                 </span>
               </div>
-            ))}
+            )) : (
+              <p className="text-sm text-[#8B92B8] py-4">No interviews taken yet.</p>
+            )}
           </div>
         </section>
 
@@ -148,7 +218,7 @@ export default function DashboardPage() {
             <h2 className="text-lg font-semibold">Mentorship Sessions</h2>
           </div>
           <div className="space-y-4">
-            {mentorshipSessions.map((session, idx) => (
+            {displaySessions.length > 0 ? displaySessions.map((session, idx) => (
               <div key={idx} className="flex justify-between items-center py-3 border-b border-[#8B92B8]/5 last:border-0">
                 <div className="flex flex-col gap-1">
                   <span className="font-medium text-sm">{session.name}</span>
@@ -156,7 +226,9 @@ export default function DashboardPage() {
                 </div>
                 <Phone size={16} className={session.active ? "text-[#6C63FF]" : "text-[#8B92B8]"} />
               </div>
-            ))}
+            )) : (
+              <p className="text-sm text-[#8B92B8] py-4">No sessions scheduled.</p>
+            )}
           </div>
         </section>
       </div>
@@ -164,37 +236,52 @@ export default function DashboardPage() {
       {/* Additional Sections */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Resume Score Breakdown */}
-        <section className="bg-[#1A1F35] p-5 rounded-[12px] border border-transparent hover:border-[#6C63FF]/30 transition-all">
-          <h2 className="text-lg font-semibold mb-5">Resume Score Breakdown</h2>
-          <div className="flex items-center gap-8">
-            {/* Circular Progress */}
-            <div className="relative w-[120px] h-[120px] flex items-center justify-center">
-              <svg className="w-full h-full transform -rotate-90">
-                <circle cx="60" cy="60" r="54" fill="none" stroke="#12152B" strokeWidth="12" />
-                <circle cx="60" cy="60" r="54" fill="none" stroke="#6C63FF" strokeWidth="12" strokeDasharray="339.29" strokeDashoffset={339.29 * (1 - 0.88)} strokeLinecap="round" />
-              </svg>
-              <span className="absolute text-2xl font-bold">88%</span>
-            </div>
-            <div className="flex-1 space-y-3">
-              {[
-                { label: "ATS Optimization", value: 94 },
-                { label: "Keywords Match", value: 85 },
-                { label: "Formatting", value: 90 },
-                { label: "Structure", value: 78 }
-              ].map((item, idx) => (
-                <div key={idx} className="space-y-1">
-                  <div className="flex justify-between text-xs text-[#8B92B8]">
-                    <span>{item.label}</span>
-                    <span>{item.value}%</span>
+        {hasResume ? (
+          <section className="bg-[#1A1F35] p-5 rounded-[12px] border border-transparent hover:border-[#6C63FF]/30 transition-all">
+            <h2 className="text-lg font-semibold mb-5">Resume Score Breakdown</h2>
+            <div className="flex items-center gap-8">
+              {/* Circular Progress */}
+              <div className="relative w-[120px] h-[120px] flex items-center justify-center">
+                <svg className="w-full h-full transform -rotate-90">
+                  <circle cx="60" cy="60" r="54" fill="none" stroke="#12152B" strokeWidth="12" />
+                  <circle cx="60" cy="60" r="54" fill="none" stroke="#6C63FF" strokeWidth="12" strokeDasharray="339.29" strokeDashoffset={339.29 * (1 - (latestResume.score / 100))} strokeLinecap="round" />
+                </svg>
+                <span className="absolute text-2xl font-bold">{latestResume.score}%</span>
+              </div>
+              <div className="flex-1 space-y-3">
+                {[
+                  { label: "ATS Optimization", value: 94 },
+                  { label: "Keywords Match", value: 85 },
+                  { label: "Formatting", value: 90 },
+                  { label: "Structure", value: 78 }
+                ].map((item, idx) => (
+                  <div key={idx} className="space-y-1">
+                    <div className="flex justify-between text-xs text-[#8B92B8]">
+                      <span>{item.label}</span>
+                      <span>{item.value}%</span>
+                    </div>
+                    <div className="h-1.5 bg-[#12152B] rounded-full overflow-hidden">
+                      <div className="h-full bg-[#6C63FF]" style={{ width: `${item.value}%` }} />
+                    </div>
                   </div>
-                  <div className="h-1.5 bg-[#12152B] rounded-full overflow-hidden">
-                    <div className="h-full bg-[#6C63FF]" style={{ width: `${item.value}%` }} />
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        ) : (
+          <section className="bg-[#1A1F35] p-5 rounded-[12px] border border-dashed border-[#6C63FF]/30 flex flex-col items-center justify-center text-center py-10">
+            <div className="w-16 h-16 bg-[#6C63FF]/10 rounded-full flex items-center justify-center mb-4">
+              <FileText size={32} className="text-[#6C63FF]" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">No Resume Analyzed</h3>
+            <p className="text-[#8B92B8] text-sm max-w-[280px] mb-6">
+              Upload your resume to see your ATS score and detailed breakdown.
+            </p>
+            <Link href="/dashboard/resume" className="bg-[#6C63FF] text-white px-6 py-2 rounded-lg font-semibold text-sm hover:opacity-90 transition-all">
+              Upload Now
+            </Link>
+          </section>
+        )}
 
         {/* Application Funnel */}
         <section className="bg-[#1A1F35] p-5 rounded-[12px] border border-transparent hover:border-[#6C63FF]/30 transition-all">
@@ -244,3 +331,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
