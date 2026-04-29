@@ -112,6 +112,7 @@
   color: rgba(255, 255, 255, 0.5);
   font-size: 0.9rem;
   margin: 0;
+  overflow-wrap: anywhere;
 }
 
 /* Form Elements */
@@ -318,12 +319,16 @@
 /* OTP Grid */
 .otpGrid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 8px;
+  width: 100%;
 }
 
 .otpInput {
+  width: 100%;
+  min-width: 0;
   height: 50px;
+  box-sizing: border-box;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
@@ -368,6 +373,14 @@
   .otpInput,
   .primaryButton {
     height: 46px;
+  }
+
+  .otpGrid {
+    gap: 6px;
+  }
+
+  .otpInput {
+    font-size: 1.05rem;
   }
 
   .roleOption {
