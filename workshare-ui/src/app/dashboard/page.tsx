@@ -57,7 +57,7 @@ export default function DashboardPage() {
 
     const fetchResumes = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000"}/api/resume/${user.id}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/resume/${user.id}`);
         const data = await response.json();
         if (data.success) {
           setResumes(data.data || []);

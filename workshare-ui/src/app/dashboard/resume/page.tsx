@@ -52,10 +52,10 @@ export default function ResumeUploadPage() {
 
     const formData = new FormData();
     formData.append("resume", file);
-    formData.append("userId", user.email);
+    formData.append("userId", user.id);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/resume/upload-resume`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/resume/upload-resume`, {
         method: "POST",
         body: formData,
       });

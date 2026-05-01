@@ -28,7 +28,7 @@ function ResultContent() {
 
     const fetchResult = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/resume/detail/${id}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/resume/detail/${id}`);
         const result = await response.json();
         
         if (result.success) {

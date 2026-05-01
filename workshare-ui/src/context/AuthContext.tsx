@@ -164,7 +164,7 @@ async function postJson<TBody extends object>(path: string, body: TBody) {
   } catch {
     return {
       ok: false,
-      error: `Unable to reach the WorkShare API at ${API_BASE_URL}.`,
+      error: `Unable to reach the WorkShare API.`,
       data: {},
     };
   }
