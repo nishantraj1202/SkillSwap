@@ -121,10 +121,15 @@ async function register(req, res) {
       },
     });
   } catch (error) {
-    console.error("Register error:", error);
+    console.error("Register error details:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     return res.status(500).json({
       success: false,
       message: "Unable to register user right now.",
+      error: process.env.NODE_ENV === "production" ? undefined : error.message
     });
   }
 }

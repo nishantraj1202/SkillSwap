@@ -57,7 +57,7 @@ type StoredSession = {
 
 const AUTH_STORAGE_KEY = "workshare_auth_session";
 const AUTH_EVENT = "workshare_auth_change";
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 let cachedSessionJson: string | null | undefined;
 let cachedSession: StoredSession | null = null;
