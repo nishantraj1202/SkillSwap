@@ -1,28 +1,28 @@
 const nodemailer = require("nodemailer");
 const { Resend } = require("resend");
 
-// ── Resend (HTTP-based, works on Render/Vercel) ──
+// Resend client for hosted deployments.
 let resendClient = null;
 
 function getResendClient() {
   if (resendClient) return resendClient;
 
-  const RESEND_API_KEY = process.env.RESEND_API_KEY?.trim();
-  if (!RESEND_API_KEY) return null;
+  const resendApiKey = process.env.RESEND_API_KEY?.trim();
+  if (!resendApiKey) return null;
 
-  resendClient = new Resend(RESEND_API_KEY);
+  resendClient = new Resend(resendApiKey);
   return resendClient;
 }
 
-// ── Nodemailer (SMTP fallback for local development) ──
+// SMTP fallback for local development.
 let cachedTransporter = null;
 
 function getTransporter() {
   if (cachedTransporter) return cachedTransporter;
 
-  const EMAIL_USER = process.env.EMAIL_USER?.trim();
-  const EMAIL_PASS = process.env.EMAIL_PASS?.replace(/\s+/g, "");
-  if (!EMAIL_USER || !EMAIL_PASS) return null;
+  const emailUser = process.env.EMAIL_USER?.trim();
+  const emailPass = process.env.EMAIL_PASS?.replace(/\s+/g, "");
+  if (!emailUser || !emailPass) return null;
 
   cachedTransporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -32,8 +32,8 @@ function getTransporter() {
     greetingTimeout: 10000,
     socketTimeout: 10000,
     auth: {
-      user: EMAIL_USER,
-      pass: EMAIL_PASS,
+      user: emailUser,
+      pass: emailPass,
     },
   });
 
@@ -61,50 +61,66 @@ function getOtpHtml(otp) {
   `;
 }
 
-async function sendOTP(email, otp) {
-  const html = getOtpHtml(otp);
+async function sendViaResend(resend, fromAddress, email, html) {
+  const { data, error } = await resend.emails.send({
+    from: `WorkShare <${fromAddress}>`,
+    to: email,
+    subject: "Verify your WorkShare account",
+    html,
+  });
 
-  // ── Try Resend first (HTTP-based, works on cloud platforms) ──
+  if (error) {
+    throw new Error(error.message || "Resend validation error");
+  }
+
+  console.log(`Resend API accepted email for ${email}. ID:`, data?.id);
+  return { delivered: true, fallback: false };
+}
+
+async function sendViaSmtp(transporter, email, html) {
+  console.log(`Attempting SMTP delivery to ${email}...`);
+  await transporter.sendMail({
+    from: `"WorkShare" <${process.env.EMAIL_USER?.trim()}>`,
+    to: email,
+    subject: "Verify your WorkShare account",
+    html,
+  });
+
+  console.log(`OTP email sent to ${email} via SMTP`);
+  return { delivered: true, fallback: false };
+}
+
+async function sendOTP(email, otp) {
+  // Always log OTP in console to assist in development/testing
+  console.log(`\n=========================================`);
+  console.log(`🔑 DEVELOPMENT OTP: ${otp} for ${email}`);
+  console.log(`=========================================\n`);
+
+  const html = getOtpHtml(otp);
+  const normalizedRecipient = email.trim().toLowerCase();
+  const smtpOwner = process.env.EMAIL_USER?.trim().toLowerCase();
+  const fromAddress = (process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev").trim();
   const resend = getResendClient();
   if (resend) {
     try {
-      const fromAddress = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
-
-      await resend.emails.send({
-        from: `WorkShare <${fromAddress}>`,
-        to: email,
-        subject: "Verify your WorkShare account",
-        html,
-      });
-
-      console.log(`✅ OTP email sent to ${email} via Resend`);
-      return { delivered: true, fallback: false };
+      console.log(`📡 Attempting Resend delivery to ${email}...`);
+      return await sendViaResend(resend, fromAddress, email, html);
     } catch (error) {
-      console.error("Resend email failed:", error.message);
-      // Fall through to nodemailer or fallback
+      console.error("❌ Resend delivery failed, falling back to SMTP:", error.message);
     }
   }
 
-  // ── Try Nodemailer SMTP (works locally) ──
   const transporter = getTransporter();
   if (transporter) {
     try {
-      await transporter.sendMail({
-        from: `"WorkShare" <${process.env.EMAIL_USER?.trim()}>`,
-        to: email,
-        subject: "Verify your WorkShare account",
-        html,
-      });
-
-      console.log(`✅ OTP email sent to ${email} via SMTP`);
-      return { delivered: true, fallback: false };
+      console.log(`📡 Attempting SMTP delivery to ${email} (from ${process.env.EMAIL_USER})...`);
+      return await sendViaSmtp(transporter, email, html);
     } catch (error) {
-      console.error("SMTP email failed:", error.message);
+      console.error("❌ SMTP delivery failed:", error.message);
     }
   }
 
-  // ── Fallback: log OTP to console ──
-  console.warn(`⚠️  OTP email transport unavailable. OTP for ${email}: ${otp}`);
+  console.warn(`OTP email transport unavailable. OTP for ${email}: ${otp}`);
   return {
     delivered: false,
     fallback: true,
